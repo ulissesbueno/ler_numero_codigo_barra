@@ -3,26 +3,54 @@
 class DecodeCodBar{
 	
 	// Layout do Número do código de barras
-	private static $lay = [  [ "id" => "bank", "size" => 3],
-							 [ "id" => "coin", "size" => 1],
-							 [ "id" => "dv", "size" => 1],
-							 [ "id" => "expires", "size" => 4],
-							 [ "id" => "value", "size" => 10],
-							 [ "id" => "fix", "size" => 1],
-							 [ "id" => "customer", "size" => 7],
-							 [ "id" => "our_number", "size" => 13],							 
-							 [ "id" => "IOF", "size" => 1],
-							 [ "id" => "type", "size" => 3]  ];
+	private static $lay = [  
+
+		[ "id" => "bank", "size" => 3],
+		[ "id" => "coin", "size" => 1],
+		[ "id" => "dv", "size" => 1],
+		[ "id" => "expires", "size" => 4],
+		[ "id" => "value", "size" => 10],
+		[ "id" => "fix", "size" => 1],
+		[ "id" => "customer", "size" => 7],
+		[ "id" => "our_number", "size" => 13],							 
+		[ "id" => "IOF", "size" => 1],
+		[ "id" => "type", "size" => 3]  
+	];
+
+	// Layout do Linha digitável
+	private static $lay_dig = [
+		[ "id" => "bank", "size" => 3],
+		[ "id" => "coin", "size" => 1],
+		[ "id" => "free1", "size" => 5],
+		[ "id" => "dv", "size" => 1],
+		[ "id" => "free2", "size" => 10],
+		[ "id" => "dv", "size" => 1],
+		[ "id" => "free3", "size" => 10],
+		[ "id" => "dv", "size" => 1],
+		[ "id" => "DIV", "size" => 1],
+		[ "id" => "expires", "size" => 4],
+		[ "id" => "value", "size" => 10]
+	];
 
 	// Decodifica o código
 	public static function decode( $cod ){
 
 		// Deixa somente números
-		$cod = preg_replace('/[\.\s]/','',$cod);
+		$cod = preg_replace('/[\.|\s]/','',$cod);
+
+		/* Identifica de é CODBAR ou linha Digitável */
+		if ( strlen($cod) == 44 ){
+			$layout = self::$lay;
+		} else if ( strlen($cod) == 47 ) {
+			$layout = self::$lay_dig;
+		} else {
+			return false;
+		}
+
 		// Mapeia o layout e criar um partner para Expressão regular
 		$partner_ar = array_map( function( $v ){
 			return "([0-9]{". $v['size'] ."})";
-		}, self::$lay );
+		}, $layout );
 
 		// Pega as partes do numero
 		$partner = implode('',$partner_ar);
@@ -36,7 +64,7 @@ class DecodeCodBar{
 			$ret = [];
 			// Set as propriedades 
 			foreach( $match as $i => $v ){
-				$ret[ self::$lay[ $i ]['id'] ] = $v ;
+				$ret[ $layout[ $i ]['id'] ] = $v ;
 			}	
 
 			// Converte dados
